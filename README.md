@@ -24,8 +24,12 @@ The AI endpoint must accept HTTPS `POST` JSON `{ "message": "...", "context": {.
 
 ESPN's public endpoints are not a contracted commercial feed and may change, throttle or omit coverage. Requests refresh every 30 seconds while the page is visible; provider latency still applies. Missing data and feed errors are shown explicitly. Match statistics and lineups are not guaranteed for every competition. Tables reflect the provider's latest published standings, not a locally calculated live table. Article headlines link to the original publisher rather than reproducing full articles. Team logos remain the property of their respective owners.
 
-Notifications require browser support and permission. The site polls while open; it does not provide background push after the tab closes. Follows and preferences are local to the browser and are not synced across devices.
+Notifications require browser support and permission. The site polls while open; it does not provide background push after the tab closes. Guest follows and browser notification permissions stay on the device. Signed-in profile details, favorites, followed matches and preferences sync through Supabase.
 
 ## Privacy
 
 The frontend stores follows, alert preference and AI endpoint URL in browser local storage. It requests match data and logos from ESPN and fonts from Google Fonts. Chat questions and visible match context are sent only to the AI endpoint explicitly configured for the site. Never put API keys, bearer tokens or other secrets in the endpoint URL, `config.js`, or this public repository.
+
+## Profiles
+
+Open Sign in in the header to create or manage a private profile. Accounts support email verification, password recovery, profile and avatar editing, team and competition favorites, synced match follows, timezone/clock and alert preferences, email/password changes, session controls, data export and permanent self-deletion with password confirmation. See ACCOUNT_SETUP.md for authentication redirect and SMTP configuration. Database migrations live in supabase/migrations/.
