@@ -6,7 +6,7 @@ The browser uses the public project URL and publishable key in `config.js`. Data
 
 ## Features
 
-Email/password sign-up, verification resend, sign-in, password recovery, private profile editing, unique username, six avatar choices, five avatar colors, bio and region, team/competition favorites, account-based followed matches, timezone/clock and alert preferences, email/password changes, session sign-out controls, JSON data export, personalization reset, and permanent account deletion after a recent password login.
+Email/password sign-up, verification resend, sign-in, password recovery, private profile editing, unique username, six avatar choices, five avatar colors, bio and region, team/competition favorites, account-based club and league follows, timezone/clock and alert preferences, email/password changes, session sign-out controls, JSON data export, personalization reset, and permanent account deletion after a recent password login.
 
 ## Auth configuration
 
@@ -33,4 +33,6 @@ Apply `supabase/migrations/20261026_profiles.sql` to provision the private profi
 
 ## Data handling
 
-No user passwords are stored in application profile tables or frontend application storage. The Supabase SDK manages session tokens. Profile exports exclude session tokens and passwords. Follows made as a guest remain local until explicitly imported. Signing out restores guest follows rather than exposing another account's saved matches.
+No user passwords are stored in application profile tables or frontend application storage. The Supabase SDK manages session tokens. Profile exports exclude session tokens and passwords. Follows made as a guest remain local until explicitly imported. Signing out restores guest follows rather than exposing another account's follows.
+
+Club and league follows reuse private favorite_teams and favorite_leagues fields. Apply supabase/club-league-follows.sql for authenticated atomic follow changes. Existing favorites remain followed. Individual match follows are no longer used; historical match data is retained until personalization reset or account deletion.

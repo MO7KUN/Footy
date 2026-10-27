@@ -23,7 +23,7 @@ A responsive football match centre with real scores and fixtures from ESPN's pub
 - Ten competitions, date navigation, team search and live/finished/upcoming filters.
 - Shareable hash routes for each match, compatible with GitHub Pages.
 - Score, key events, full commentary, venue and officials, starting lineups and substitutes, statistics, tournament tables with both teams highlighted, match reports and team-related articles when the provider supplies them.
-- Followed matches persist on the device. Optional browser notifications for score and status changes while the site remains open.
+- Follow clubs and leagues from their detail pages. Their matches populate Following for the selected date; club follows apply across covered competitions. Guest follows persist on the device. Optional browser notifications for score and status changes while the site remains open.
 - Football companion for loaded scores, match summaries and common rules. A secure generative AI endpoint can be connected in Settings; no API keys are accepted by or embedded in the static frontend.
 
 ## Hosting
@@ -40,7 +40,7 @@ The AI endpoint must accept HTTPS `POST` JSON `{ "message": "...", "context": {.
 
 ESPN's public endpoints are not a contracted commercial feed and may change, throttle or omit coverage. Requests refresh every 30 seconds while the page is visible; provider latency still applies. Missing data and feed errors are shown explicitly. Match statistics and lineups are not guaranteed for every competition. Tables reflect the provider's latest published standings, not a locally calculated live table. Article headlines link to the original publisher rather than reproducing full articles. Team logos remain the property of their respective owners.
 
-Notifications require browser support and permission. The site polls while open; it does not provide background push after the tab closes. Guest follows and browser notification permissions stay on the device. Signed-in profile details, favorites, followed matches and preferences sync through Supabase.
+Notifications require browser support and permission. The site polls while open; it does not provide background push after the tab closes. Guest follows and browser notification permissions stay on the device. Signed-in profile details, club and league follows and preferences sync through Supabase.
 
 ## Privacy
 
@@ -48,4 +48,6 @@ The frontend stores follows, alert preference and AI endpoint URL in browser loc
 
 ## Profiles
 
-Open Sign in in the header to create or manage a private profile. Accounts support email verification, password recovery, profile and avatar editing, team and competition favorites, synced match follows, timezone/clock and alert preferences, email/password changes, session controls, data export and permanent self-deletion with password confirmation. See ACCOUNT_SETUP.md for authentication redirect and SMTP configuration. Database migrations live in supabase/migrations/.
+Open Sign in in the header to create or manage a private profile. Accounts support email verification, password recovery, profile and avatar editing, team and competition favorites, synced club and league follows, timezone/clock and alert preferences, email/password changes, session controls, data export and permanent self-deletion with password confirmation. See ACCOUNT_SETUP.md for authentication redirect and SMTP configuration. Database migrations live in supabase/migrations/.
+
+Club and league follows reuse private favorite_teams and favorite_leagues fields. Apply supabase/club-league-follows.sql for authenticated atomic follow changes. Existing favorites remain followed. Individual match follows are no longer used; historical match data is retained until personalization reset or account deletion.
