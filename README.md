@@ -1,5 +1,21 @@
 # Footy
 
+## Leagues and clubs
+
+Use Leagues and Clubs in the main navigation, or open a competition from a score group and a club from a match header, table, player leaderboard or knockout tie.
+
+League pages contain sourced historical title records, the previous completed season's champion, current/historical tables, goals/assists/shots/saves leaderboards, club lists, a monthly fixture calendar, knockout graphs for UEFA competitions and MLS, and a statistical gameweek XI. Club pages contain available details, a searchable squad grouped by position, competition-specific calendars, tables highlighting the club, and access to its knockout competition views.
+
+Best XI is a Footy statistical selection, not an official award or a complete performance rating. The visible method scores goals, assists, saves, clean sheets and cards from completed games, with a 4–3–3 formation. Weeks run Monday–Sunday in UTC. It reports match coverage and leaves missing positions empty. Clean-sheet bonuses use starter status because reliable participation minutes are unavailable. Incomplete provider coverage limits the selection.
+
+Knockout ties group published legs by round and teams. Aggregate scores and advancement use the provider's series fields; the graph never predicts unpublished future matchups. Select a completed season to see a full historical knockout graph. Regular league competitions use tables rather than invented brackets.
+
+Calendar dates use UTC and kickoff text follows profile preferences. Monthly calendars cover the selected competition. Change competition on a club's Standings or Knockout page to see another competition; this does not imply the club qualified. Feed coverage, particularly historical rosters and coaches, may be incomplete. Missing details remain labeled unavailable.
+
+Historical title counts have dated primary-source links in `competition-data.js`; their scope is shown explicitly (for example, Premier League era versus all English top-flight championships). Previous champions are loaded from the prior completed season's final table or knockout final, not inferred from a current table. Records do not auto-update.
+
+Run model checks with `node --test tests/football-model.test.mjs`.
+
 A responsive football match centre with real scores and fixtures from ESPN's public football feed. No fabricated or simulated fixtures are used.
 
 ## Features
