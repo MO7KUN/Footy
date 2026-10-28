@@ -1,5 +1,5 @@
 import { followsMatch, followingCount } from './follow-model.js';
-import { initializeFootballPages, routeFootballPages, isFootballRoute, leaveFootballPages, refreshFootballFollows } from './football-pages.js';
+import { initializeFootballPages, routeFootballPages, isFootballRoute, leaveFootballPages, refreshFootballFollows } from './football-pages.js?v=clubs-all-1';
 import { initializeProfiles, renderProfile, isProfileRoute, accountPreferences, accountUser, setAccountFollow } from './profiles.js';
 const $ = s => document.querySelector(s);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
