@@ -5,3 +5,5 @@ android/
 *.keystore
 *.jks
 local.properties
+google-services.json
+release-assets/
