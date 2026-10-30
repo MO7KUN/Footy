@@ -18,7 +18,7 @@ let profiles=await readFile(path.join(output,'profiles.js'),'utf8');
 profiles=profiles.replace("const blob=new Blob([JSON.stringify({exported_at:new Date().toISOString(),account:safeUser,profile},null,2)]", "if(window.FOOTY_NATIVE){await window.FOOTY_NATIVE.shareProfile(JSON.stringify({exported_at:new Date().toISOString(),account:safeUser,profile},null,2));return}const blob=new Blob([JSON.stringify({exported_at:new Date().toISOString(),account:safeUser,profile},null,2)]");
 await writeFile(path.join(output,'profiles.js'),profiles);
 let app=await readFile(path.join(output,'app.js'),'utf8');
-app=app.replace(/\.\/football-pages\.js\?[^']+/g,'./football-pages.js');
+app=app.replace(/\.\/(football-pages|profiles)\.js\?[^']+/g,'./$1.js');
 app=app.replace("async function enableAlerts(){", "async function enableAlerts(){if(window.FOOTY_NATIVE){alerts=await window.FOOTY_NATIVE.enableAlerts();store.set('alerts',alerts);notificationStatus();toast(alerts?(window.FOOTY_NATIVE.alertStatus||'Android alerts enabled.'):'Notifications were not enabled.');return}");
 app=app.replace("if('Notification'in window&&Notification.permission==='granted')", "if(window.FOOTY_NATIVE)window.FOOTY_NATIVE.notify(title,body,`/match/${e.league}/${e.id}`).catch(()=>{});if(!window.FOOTY_NATIVE&&'Notification'in window&&Notification.permission==='granted')");
 await writeFile(path.join(output,'app.js'),app);

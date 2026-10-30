@@ -1,7 +1,7 @@
 import {leagueBadge,uiIcon} from './badges.js';
 import { followsMatch, followingCount } from './follow-model.js';
 import { initializeFootballPages, routeFootballPages, isFootballRoute, leaveFootballPages, refreshFootballFollows } from './football-pages.js?v=delivery-1';
-import { initializeProfiles, renderProfile, isProfileRoute, accountPreferences, accountUser, setAccountFollow, registerPushDevice, removePushDevice } from './profiles.js';
+import { initializeProfiles, renderProfile, isProfileRoute, accountPreferences, accountUser, setAccountFollow, registerPushDevice, removePushDevice } from './profiles.js?v=delivery-1';
 const $ = s => document.querySelector(s);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const safeURL = value => { try { const u = new URL(value); return u.protocol === 'https:' || u.protocol === 'http:' ? esc(u.href.replace(/^http:/,'https:')) : ''; } catch { return ''; } };
