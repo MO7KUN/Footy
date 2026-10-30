@@ -12,6 +12,8 @@ permissions:
   contents: read
 jobs:
   release:
+    permissions:
+      contents: write
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: android-release
@@ -22,6 +24,8 @@ jobs:
     env:
       FOOTY_VERSION_CODE: ${{ inputs.version_code }}
       FOOTY_VERSION_NAME: ${{ inputs.version_name }}
+      FOOTY_GOOGLE_SERVICES_JSON: ${{ secrets.FOOTY_GOOGLE_SERVICES_JSON }}
+      FOOTY_PUSH_BACKEND_READY: ${{ vars.FOOTY_PUSH_BACKEND_READY }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -74,3 +78,12 @@ jobs:
             mobile/android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish signed Android download and update manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          node scripts/release-manifest.mjs
+          tag="android-v${FOOTY_VERSION_NAME}-${FOOTY_VERSION_CODE}"
+          gh release create "$tag" release-assets/Footy.apk release-assets/Footy.aab release-assets/footy-release.json --repo "$GITHUB_REPOSITORY" --title "Footy Android $FOOTY_VERSION_NAME" --notes "Signed Android release. Install Footy.apk or use Footy.aab for store distribution."

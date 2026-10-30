@@ -26,7 +26,7 @@ Sign in using the same email and password as the website. The existing row-level
 
 Account creation, email verification, password recovery and changing email open the website so the existing browser email-confirmation flow retains its session verifier. Return to the app and sign in afterwards. Public account emails remain restricted until the email service is configured, as on the website. Profile export opens the Android share sheet, so choose its recipient carefully.
 
-Notifications reflect changes polled while the app is active. They are **not background push notifications**; a server/Firebase integration is needed for alerts while the app is closed. AI uses the same configured service (currently the built-in companion until a secure AI endpoint is connected). Scores, fixtures, articles, logos and account sync need an internet connection.
+Foreground alerts work while the app is active. Background push registration and a private Supabase/FCM sender are prepared but require Firebase connection and backend activation before they can deliver notifications with the app closed. The app reports pending setup accurately. Android schedules daily signed-release checks and offers a manual check in Settings. See [delivery setup and current limitations](DELIVERY_SETUP.md). AI uses the same configured service (currently the built-in companion until a secure AI endpoint is connected). Scores, fixtures, articles, logos and account sync need an internet connection.
 
 ## Release and testing
 

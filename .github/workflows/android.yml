@@ -4,10 +4,13 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main]
+    branches: [main, 'feature/**']
     paths: ['mobile/**', '*.js', '*.css', 'index.html', '.github/workflows/android.yml']
 permissions:
   contents: read
+concurrency:
+  group: android-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 jobs:
   android:
     runs-on: ubuntu-latest
