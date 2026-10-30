@@ -1,0 +1,25 @@
+import {readFile,writeFile,mkdir,cp,access} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+import {build} from 'esbuild';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const exists=async p=>access(p).then(()=>true,()=>false);
+// The Sites checkout uses dist; GitHub Pages keeps the same assets at its root.
+const shared=await exists(path.join(root,'../dist/index.html'))?path.join(root,'../dist'):path.join(root,'..');
+const output=path.join(root,'www');await mkdir(output,{recursive:true});
+for(const name of ['index.html','config.js','app.js','profiles.js','football-pages.js','football-model.js','follow-model.js','competition-data.js','style.css','profiles.css','football-pages.css','icon.svg'])await cp(path.join(shared,name),path.join(output,name));
+let html=await readFile(path.join(output,'index.html'),'utf8');
+html=html.replace(/<script type="module" src="app\.js[^\"]*"><\/script>/,'<script type="module" src="native.js"></script>').replace('</head>','<link rel="stylesheet" href="mobile.css"></head>').replace('width=device-width,initial-scale=1','width=device-width,initial-scale=1,viewport-fit=cover');
+await writeFile(path.join(output,'index.html'),html);
+let profiles=await readFile(path.join(output,'profiles.js'),'utf8');
+profiles=profiles.replaceAll('https://esm.sh/@supabase/supabase-js@2.102.0?bundle','@supabase/supabase-js');
+profiles=profiles.replace("const blob=new Blob([JSON.stringify({exported_at:new Date().toISOString(),account:safeUser,profile},null,2)]", "if(window.FOOTY_NATIVE){await window.FOOTY_NATIVE.shareProfile(JSON.stringify({exported_at:new Date().toISOString(),account:safeUser,profile},null,2));return}const blob=new Blob([JSON.stringify({exported_at:new Date().toISOString(),account:safeUser,profile},null,2)]");
+await writeFile(path.join(output,'profiles.js'),profiles);
+let app=await readFile(path.join(output,'app.js'),'utf8');
+app=app.replace(/\.\/football-pages\.js\?[^']+/g,'./football-pages.js');
+app=app.replace("async function enableAlerts(){", "async function enableAlerts(){if(window.FOOTY_NATIVE){alerts=await window.FOOTY_NATIVE.enableAlerts();store.set('alerts',alerts);notificationStatus();toast(alerts?'Android match alerts enabled while Footy is open.':'Notifications were not enabled.');return}");
+app=app.replace("if('Notification'in window&&Notification.permission==='granted')", "if(window.FOOTY_NATIVE)window.FOOTY_NATIVE.notify(title,body,`/match/${e.league}/${e.id}`).catch(()=>{});if(!window.FOOTY_NATIVE&&'Notification'in window&&Notification.permission==='granted')");
+await writeFile(path.join(output,'app.js'),app);
+await cp(path.join(root,'src/mobile.css'),path.join(output,'mobile.css'));
+await build({entryPoints:[path.join(root,'src/native.js')],bundle:true,format:'esm',target:'chrome110',outfile:path.join(output,'native.js'),minify:true,legalComments:'none'});
+console.log('Android assets built with the existing Footy Supabase configuration.');

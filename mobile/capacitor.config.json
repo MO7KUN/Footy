@@ -1,0 +1,9 @@
+{
+  "appId": "me.mohamedlaaribi.footy",
+  "appName": "Footy",
+  "webDir": "www",
+  "backgroundColor": "#12382c",
+  "server": { "androidScheme": "https", "cleartext": false },
+  "android": { "allowMixedContent": false },
+  "plugins": { "LocalNotifications": { "iconColor": "#749a3d" } }
+}

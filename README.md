@@ -53,3 +53,7 @@ Open Sign in in the header to create or manage a private profile. Accounts suppo
 Club and league follows reuse private favorite_teams and favorite_leagues fields. Apply supabase/club-league-follows.sql for authenticated atomic follow changes. Existing favorites remain followed. Individual match follows are no longer used; historical match data is retained until personalization reset or account deletion.
 
 Club calendars and recent/upcoming lists combine the provider’s completed/live and upcoming all-competition schedules, deduplicate fixtures, and keep each fixture’s competition logo and match link. Standings competition selection appears above the tables and stays within the current tab.
+
+## Android app
+
+The Android version lives in `mobile/` and uses the same Supabase accounts, private profiles and follows. See [Android setup and preview installation](mobile/README.md). The Android preview APK workflow builds an installable debug APK on GitHub Actions.
