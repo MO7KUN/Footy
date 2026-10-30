@@ -14,10 +14,11 @@ Firebase project `footy-mo7kun-push` is created, with Android package `me.mohame
 
 The private sender identity has the Firebase Cloud Messaging API Admin role. Its private key and the scheduler bearer secret are stored in Footy's encrypted Supabase Vault, with the user's explicit approval. Neither secret is in GitHub or Android assets. A service-only RPC validates the scheduler credential before returning the provider credential to the Edge Function. Anonymous and signed-in clients cannot execute that RPC.
 
-`push-notifications.sql` and `push-scheduler.sql` have been applied to the existing shared Supabase project. Device registrations are private, owner/MFA protected, and tied to active sessions. Sender snapshots, queue, and lease are service-only. `football-push` is deployed; Cron invokes it once per minute. An unauthorized request returned 401, an authorized run returned 200, and a scheduled run returned 200. The sender baselines scores, respects current follows/preferences, retries failed sends, and removes invalid tokens.
+`push-notifications.sql` and `push-scheduler.sql` have been applied to the existing shared Supabase project. Device registrations are private, owner/MFA protected, and tied to active sessions. Sender snapshots, queue, and lease are service-only. `football-push` is deployed; Cron invokes it once per minute. An unauthorized request returned 401, an authorized run returned 200, and a scheduled run returned 200. The sender uses the compatible ESPN site.web.api scoreboard endpoint (all ten feeds verified reachable). The sender baselines scores, respects current follows/preferences, retries failed sends, and removes invalid tokens.
 
 ## Device verification still required
 
 Build/install the new Android preview, sign in, follow a club or league, and enable notifications. Verify delivery with the app backgrounded, permission denial, preference opt-outs, token refresh, account sign-out, and offline recovery before broad distribution. No real-device delivery has been claimed. The sender covers the same ten competitions as the match centre. Guests retain local foreground alerts; background push requires sign-in.
 
 Private local provisioning files are outside the source checkout in `.footy-tools`. Do not copy them into source or build artifacts.
+
