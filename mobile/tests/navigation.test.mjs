@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {externalTarget} from '../src/navigation.js';
+test('native club and profile navigation stays inside the app',()=>{for(const href of ['https://localhost/#/clubs','https://localhost/#/profile','#/match/eng.1/123'])assert.equal(externalTarget(href,'https://localhost'),null)});
+test('external HTTPS articles open outside the app; unsafe schemes do not',()=>{assert.equal(externalTarget('https://www.espn.com/soccer/','https://localhost'),'https://www.espn.com/soccer/');assert.equal(externalTarget('javascript:alert(1)','https://localhost'),null);assert.equal(externalTarget('http://example.com','https://localhost'),null)});

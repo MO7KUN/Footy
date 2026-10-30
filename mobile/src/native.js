@@ -3,6 +3,7 @@ import {App} from '@capacitor/app';
 import {Browser} from '@capacitor/browser';
 import {LocalNotifications} from '@capacitor/local-notifications';
 import {Share} from '@capacitor/share';
+import {externalTarget} from './navigation.js';
 const native=Capacitor.isNativePlatform();
 const website='https://mohamedlaaribi.me/Footy/';
 const openWebsite=()=>Browser.open({url:website+'#/profile'});
@@ -15,7 +16,7 @@ if(native){
   };
   await LocalNotifications.addListener('localNotificationActionPerformed',event=>{const route=event.notification.extra?.route;if(/^\/match\/[a-z0-9.]+\/\d+$/.test(route||''))location.hash=route});
   await App.addListener('backButton',()=>{const dialog=document.querySelector('dialog[open]');if(dialog){dialog.close();return}if(location.hash&&location.hash!=='#/'){location.hash='/';return}App.minimizeApp()});
-  document.addEventListener('click',event=>{const action=event.target.closest('[data-action]')?.dataset.action;if(['auth:signup','auth:reset','resend-entry','resend'].includes(action)){event.preventDefault();event.stopImmediatePropagation();openWebsite();return}const anchor=event.target.closest('a');if(anchor?.href?.startsWith('https://')){event.preventDefault();Browser.open({url:anchor.href})}},true);
+  document.addEventListener('click',event=>{const action=event.target.closest('[data-action]')?.dataset.action;if(['auth:signup','auth:reset','resend-entry','resend'].includes(action)){event.preventDefault();event.stopImmediatePropagation();openWebsite();return}const anchor=event.target.closest('a'),url=anchor&&externalTarget(anchor.href,location.origin);if(url){event.preventDefault();Browser.open({url})}},true);
   document.addEventListener('submit',event=>{if(event.target.id==='emailForm'){event.preventDefault();event.stopImmediatePropagation();openWebsite()}},true);
 }
 document.body.classList.add('mobile-app');
