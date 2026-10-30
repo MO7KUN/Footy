@@ -2,6 +2,7 @@ import {readFile,writeFile,mkdir,cp,access} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {build} from 'esbuild';
+import {firebaseConfig,pushBackendReady} from './firebase-config.mjs';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const exists=async p=>access(p).then(()=>true,()=>false);
 // The Sites checkout uses dist; GitHub Pages keeps the same assets at its root.
@@ -13,7 +14,8 @@ await cp(path.join(shared,'vendor'),path.join(output,'vendor'),{recursive:true})
 let html=await readFile(path.join(output,'index.html'),'utf8');
 html=html.replace(/<script type="module" src="app\.js[^\"]*"><\/script>/,'<script type="module" src="native.js"></script>').replace('</head>','<link rel="stylesheet" href="mobile.css"></head>').replace('width=device-width,initial-scale=1','width=device-width,initial-scale=1,viewport-fit=cover');
 await writeFile(path.join(output,'index.html'),html);
-await writeFile(path.join(output,'config.js'),(await readFile(path.join(output,'config.js'),'utf8'))+'\nwindow.FOOTY_CONFIG.pushConfigured = '+Boolean(process.env.FOOTY_GOOGLE_SERVICES_JSON&&process.env.FOOTY_PUSH_BACKEND_READY==='true')+';\n');
+await firebaseConfig();
+await writeFile(path.join(output,'config.js'),(await readFile(path.join(output,'config.js'),'utf8'))+'\nwindow.FOOTY_CONFIG.pushConfigured = '+pushBackendReady+';\n');
 let profiles=await readFile(path.join(output,'profiles.js'),'utf8');
 profiles=profiles.replace("const blob=new Blob([JSON.stringify({exported_at:new Date().toISOString(),account:safeUser,profile},null,2)]", "if(window.FOOTY_NATIVE){await window.FOOTY_NATIVE.shareProfile(JSON.stringify({exported_at:new Date().toISOString(),account:safeUser,profile},null,2));return}const blob=new Blob([JSON.stringify({exported_at:new Date().toISOString(),account:safeUser,profile},null,2)]");
 await writeFile(path.join(output,'profiles.js'),profiles);

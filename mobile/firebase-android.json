@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "18326979249",
+    "project_id": "footy-mo7kun-push",
+    "storage_bucket": "footy-mo7kun-push.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:18326979249:android:48568866b04af837939890",
+        "android_client_info": {
+          "package_name": "me.mohamedlaaribi.footy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAY9t_g61SiFpZ8LutC0EWlRmKkR1uEqHA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

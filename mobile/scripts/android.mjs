@@ -2,6 +2,7 @@ import {spawnSync} from 'node:child_process';
 import {readFile,writeFile,mkdir,access,cp} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
+import {firebaseConfig} from './firebase-config.mjs';
 const root=fileURLToPath(new URL('../',import.meta.url));process.chdir(root);
 const exists=await access('android/app/src/main/AndroidManifest.xml').then(()=>true,()=>false);
 const cli=path.join(root,'node_modules/@capacitor/cli/bin/capacitor');
@@ -24,6 +25,6 @@ await mkdir('android/app/src/main/res/drawable',{recursive:true});await writeFil
 await writeFile('android/app/src/main/res/drawable/footy_notification.xml','<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24"><path android:strokeColor="#ffffffff" android:strokeWidth="2" android:strokeLineCap="round" android:pathData="M12,3v18 M3,12h18 M5,5l14,14 M5,19l14,-14"/></vector>');
 let appGradle=await readFile(gradleFile,'utf8');if(!appGradle.includes('androidx.work:work-runtime:'))await writeFile(gradleFile,appGradle+"\ndependencies { implementation 'androidx.work:work-runtime:2.12.0' }\n");
 if(!xml.includes('android.permission.ACCESS_NETWORK_STATE'))xml=xml.replace('</manifest>','<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /></manifest>');
-if(process.env.FOOTY_GOOGLE_SERVICES_JSON){const google=JSON.parse(process.env.FOOTY_GOOGLE_SERVICES_JSON);if(!google.client?.some(c=>c.client_info?.android_client_info?.package_name==='me.mohamedlaaribi.footy'))throw Error('Firebase config is for another Android app');await writeFile('android/app/google-services.json',JSON.stringify(google));}
-xml=(await readFile(manifest,'utf8')).replace(/android:icon="[^"]+"/,'android:icon="@drawable/footy_launcher"').replace(/android:roundIcon="[^"]+"/,'android:roundIcon="@drawable/footy_launcher"');await writeFile(manifest,xml);
+await writeFile('android/app/google-services.json',JSON.stringify(await firebaseConfig()));
+xml=xml.replace(/android:icon="[^"]+"/,'android:icon="@drawable/footy_launcher"').replace(/android:roundIcon="[^"]+"/,'android:roundIcon="@drawable/footy_launcher"');await writeFile(manifest,xml);
 console.log('Footy Android project ready. Open mobile/android in Android Studio or run its Gradle wrapper.');
