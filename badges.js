@@ -1,0 +1,10 @@
+const competitionLogos={'eng.1':'23','esp.1':'15','ita.1':'12','ger.1':'10','fra.1':'9','uefa.champions':'2','uefa.europa':'2310','usa.1':'19','ksa.1':'2488','por.1':'14'};
+const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safe=url=>{try{const parsed=new URL(url);return parsed.protocol==='https:'?esc(parsed.href):''}catch{return ''}};
+export function uiIcon(kind){const paths=kind==='club'?'<path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6l-8-3Z"/><path d="M9 12h6M12 9v6"/>':kind==='standings'?'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11M3 14h18"/>':'<path d="M8 3h8v5a4 4 0 0 1-8 0V3ZM8 5H4v2a4 4 0 0 0 4 4M16 5h4v2a4 4 0 0 1-4 4M12 12v6M8 21h8M9 18h6"/>';return '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+paths+'</svg>'}
+function badge(url,label,kind){return '<span class="footy-badge '+kind+'" title="'+esc(label)+'" aria-hidden="true">'+(safe(url)?'<img src="'+safe(url)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<span class="badge-fallback">'+uiIcon('competition')+'</span></span>'}
+export function leagueBadge(id,label='',url=''){return badge(url||(competitionLogos[id]?'https://a.espncdn.com/i/leaguelogos/soccer/500/'+competitionLogos[id]+'.png':''),label,'competition-badge')}
+export function clubBadge(team){return badge(team?.logo||team?.logos?.[0]?.href,team?.displayName||'Club','club-badge')}
+// Keep a visible local icon if a remote badge is missing or unavailable offline.
+document.addEventListener('error',event=>{const img=event.target;if(img?.matches?.('.footy-badge img'))img.remove()},true);
+document.addEventListener('change',event=>{const select=event.target;if(select?.matches?.('select[data-competition-icon]')){const current=select.closest('.icon-select')?.querySelector('.footy-badge');if(current)current.outerHTML=leagueBadge(select.value,select.selectedOptions[0]?.textContent||'Competition')}},true);
