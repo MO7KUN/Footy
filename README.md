@@ -57,3 +57,9 @@ Club calendars and recent/upcoming lists combine the provider’s completed/live
 ## Android app
 
 The Android version lives in `mobile/` and uses the same Supabase accounts, private profiles and follows. See [Android setup and preview installation](mobile/README.md). The Android preview APK workflow builds an installable debug APK on GitHub Actions.
+
+## Security updates
+
+Authentication uses a locally bundled SDK. In mobile/, run npm ci --ignore-scripts then npm run build:web to regenerate vendor/supabase.js; commit the output for GitHub Pages. Run node --test tests/*.test.mjs at repository root, then npm run build and npm test in mobile/.
+
+Database MFA enforcement and JSON validation are recorded in supabase/migrations/20261030132720_footy_security_hardening.sql. See ACCOUNT_SETUP.md for database verification and mobile/README.md for encrypted storage and signed release setup.

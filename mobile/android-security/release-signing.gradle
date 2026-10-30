@@ -1,0 +1,29 @@
+// Loaded by the generated app project. Debug/PR builds never need signing secrets.
+if (project.hasProperty('footyRelease')) {
+    def required = ['FOOTY_KEYSTORE_PATH', 'FOOTY_KEYSTORE_PASSWORD', 'FOOTY_KEY_ALIAS', 'FOOTY_KEY_PASSWORD', 'FOOTY_VERSION_CODE', 'FOOTY_VERSION_NAME']
+    required.each { name ->
+        if (!System.getenv(name)) throw new GradleException("Missing release setting: " + name)
+    }
+    def releaseCode = System.getenv('FOOTY_VERSION_CODE')
+    if (!(releaseCode ==~ /[1-9][0-9]{0,8}/)) throw new GradleException('Invalid release version code')
+    android {
+        defaultConfig {
+            versionCode releaseCode.toInteger()
+            versionName System.getenv('FOOTY_VERSION_NAME')
+        }
+        signingConfigs {
+            footyRelease {
+                storeFile file(System.getenv('FOOTY_KEYSTORE_PATH'))
+                storePassword System.getenv('FOOTY_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('FOOTY_KEY_ALIAS')
+                keyPassword System.getenv('FOOTY_KEY_PASSWORD')
+            }
+        }
+        buildTypes {
+            release {
+                debuggable false
+                signingConfig signingConfigs.footyRelease
+            }
+        }
+    }
+}

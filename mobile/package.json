@@ -6,9 +6,10 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "android:init": "node scripts/android.mjs",
-    "android:sync": "npm run build && npx cap sync android",
+    "android:sync": "npm run build && npm run android:init",
     "android:open": "npx cap open android",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "build:web": "node scripts/build-web.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.6.0",

@@ -1,4 +1,5 @@
-import {Capacitor} from '@capacitor/core';
+import {secureAuthStorage,clearLegacyAuthStorage} from './secure-storage.js';
+import {Capacitor,registerPlugin} from '@capacitor/core';
 import {App} from '@capacitor/app';
 import {Browser} from '@capacitor/browser';
 import {LocalNotifications} from '@capacitor/local-notifications';
@@ -9,6 +10,9 @@ const website='https://mohamedlaaribi.me/Footy/';
 const openWebsite=()=>Browser.open({url:website+'#/profile'});
 let notificationId=1;
 if(native){
+  const sessionPlugin=registerPlugin('SecureSession');
+  window.FOOTY_AUTH_STORAGE=secureAuthStorage(sessionPlugin);
+  await clearLegacyAuthStorage(localStorage);
   window.FOOTY_NATIVE={
     enableAlerts:async()=>{const result=await LocalNotifications.requestPermissions();if(result.display!=='granted')return false;await LocalNotifications.createChannel({id:'match-updates',name:'Match updates',description:'Scores and status for followed clubs and leagues',importance:4});return true},
     notify:async(title,body,route)=>{if(document.hidden)return;const permission=await LocalNotifications.checkPermissions();if(permission.display==='granted')await LocalNotifications.schedule({notifications:[{id:notificationId++%2147483647,title,body,channelId:'match-updates',extra:{route}}]})},
