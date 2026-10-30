@@ -50,3 +50,23 @@ jobs:
           path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
+
+  publish-preview:
+    needs: android
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: Footy-Android-preview
+          path: preview
+      - name: Publish public preview APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cp preview/app-debug.apk Footy-preview.apk
+          tag="android-preview-${GITHUB_RUN_NUMBER}"
+          gh release create "$tag" Footy-preview.apk --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --latest=false --title "Footy Android preview ${GITHUB_RUN_NUMBER}" --notes "Public testing APK. No GitHub sign-in is required to download. This debug preview is separate from signed production releases and automatic updates."

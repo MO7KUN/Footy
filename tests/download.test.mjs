@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFile} from 'node:fs/promises';
+const source=await readFile(new URL('../dist/download.js',import.meta.url),'utf8').catch(()=>readFile(new URL('../download.js',import.meta.url),'utf8'));
+const root='https://github.com/MO7KUN/Footy';
+async function page(routes){const button={href:root+'/actions/workflows/android.yml'},status={};await new vm.Script('(async()=>{'+source+'})()').runInNewContext({document:{querySelector:id=>id==='#androidDownload'?button:status},AbortSignal,fetch:async url=>{const value=routes[url.replace('https://api.github.com/repos/MO7KUN/Footy','')];return {ok:value!==undefined,json:async()=>value}}});return {button,status}}
+test('signed-out fallback opens a public build page instead of a 404 artifact link',async()=>{const p=await page({'/releases?per_page=20':[],'/actions/workflows/android.yml/runs?branch=main&status=success&per_page=5':{workflow_runs:[{id:123}]},'/actions/runs/123/artifacts':{artifacts:[{id:456,name:'Footy-Android-preview',expired:false}]}});assert.equal(p.button.href,root+'/actions/runs/123');assert.match(p.status.textContent,/sign in to GitHub/)});
+test('a public preview APK downloads directly without an artifact login',async()=>{const url=root+'/releases/download/android-preview-2/Footy-preview.apk';const p=await page({'/releases?per_page=20':[{prerelease:true,tag_name:'android-preview-2',assets:[{name:'Footy-preview.apk',browser_download_url:url}]}]});assert.equal(p.button.href,url);assert.match(p.status.textContent,/No GitHub sign-in needed/)});
+test('signed releases take priority over previews and network failure keeps a working fallback',async()=>{const url=root+'/releases/download/android-v1/Footy.apk';assert.equal((await page({'/releases/latest':{tag_name:'android-v1',assets:[{name:'Footy.apk',browser_download_url:url}]}})).button.href,url);assert.equal((await page({})).button.href,root+'/actions/workflows/android.yml')});
