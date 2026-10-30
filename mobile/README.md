@@ -22,7 +22,7 @@ The generated Android project is in `mobile/android/`. Android Studio can run it
 
 ## Accounts and data
 
-Sign in using the same email and password as the website. The existing row-level security restricts profiles and follow changes to their owner. Only the public configuration in `config.js` is bundled. Session tokens remain in the application's WebView sandbox; Android backups are disabled. The app does not share login sessions with an external browser.
+Sign in using the same email and password as the website. The existing row-level security restricts profiles and follow changes to their owner. Only the public configuration in `config.js` is bundled. Session tokens are encrypted with AES-GCM using a non-exportable Android Keystore key. Authentication does not fall back to plaintext storage if the keystore fails. Android cloud backup and device-transfer extraction are disabled. Upgrading clears old WebView authentication entries, so existing app users must sign in again. The app does not share login sessions with an external browser.
 
 Account creation, email verification, password recovery and changing email open the website so the existing browser email-confirmation flow retains its session verifier. Return to the app and sign in afterwards. Public account emails remain restricted until the email service is configured, as on the website. Profile export opens the Android share sheet, so choose its recipient carefully.
 
@@ -30,4 +30,4 @@ Notifications reflect changes polled while the app is active. They are **not bac
 
 ## Release and testing
 
-CI produces an installable APK, but physical-device/emulator testing is still required: sign in, follow/unfollow on web and phone then reopen the other app, edit a profile, inspect domestic/European fixture links, test back navigation, deny/allow notification permission, go offline and sign out. A production release needs a stable privately stored signing key, a release AAB, Play Console setup and store privacy/data-safety declarations. Do not commit signing keys, passwords or service-role keys.
+CI produces an installable APK, but physical-device/emulator testing is still required: sign in, follow/unfollow on web and phone then reopen the other app, edit a profile, inspect domestic/European fixture links, test back navigation, deny/allow notification permission, go offline and sign out. The Android signed release workflow builds a non-debuggable signed APK and AAB from main. Configure an android-release GitHub environment with FOOTY_KEYSTORE_BASE64, FOOTY_KEYSTORE_PASSWORD, FOOTY_KEY_ALIAS and FOOTY_KEY_PASSWORD secrets using your stable private production signing key. Dispatch the workflow with an increasing version_code and version_name. Signing fails closed when a setting is absent; debug keys are never substituted. Play Console setup and store privacy/data-safety declarations remain required for store distribution. Do not commit signing keys, passwords or service-role keys.

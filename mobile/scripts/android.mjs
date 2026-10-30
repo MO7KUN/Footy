@@ -1,5 +1,5 @@
 import {spawnSync} from 'node:child_process';
-import {readFile,writeFile,mkdir,access} from 'node:fs/promises';
+import {readFile,writeFile,mkdir,access,cp} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 const root=fileURLToPath(new URL('../',import.meta.url));process.chdir(root);
@@ -7,7 +7,15 @@ const exists=await access('android/app/src/main/AndroidManifest.xml').then(()=>t
 const cli=path.join(root,'node_modules/@capacitor/cli/bin/capacitor');
 for(const args of exists?[['sync','android']]:[['add','android']]){const result=spawnSync(process.execPath,[cli,...args],{stdio:'inherit'});if(result.status!==0)process.exit(result.status||1)}
 const manifest='android/app/src/main/AndroidManifest.xml';
-let xml=await readFile(manifest,'utf8');xml=xml.replace('android:allowBackup="true"','android:allowBackup="false"');
+let xml=await readFile(manifest,'utf8');xml=xml.replace(/android:allowBackup="[^"]*"/,'android:allowBackup="false"');
+for(const [name,value] of Object.entries({usesCleartextTraffic:'false',fullBackupContent:'false',dataExtractionRules:'@xml/data_extraction_rules'})){const attr=new RegExp('android:'+name+'="[^"]*"','g');xml=xml.replace(attr,'');xml=xml.replace('<application','<application android:'+name+'="'+value+'"');}
+await mkdir('android/app/src/main/res/xml',{recursive:true});
+await writeFile('android/app/src/main/res/xml/data_extraction_rules.xml','<data-extraction-rules><cloud-backup><exclude domain="root" path="."/><exclude domain="file" path="."/><exclude domain="database" path="."/><exclude domain="sharedpref" path="."/><exclude domain="external" path="."/></cloud-backup><device-transfer><exclude domain="root" path="."/><exclude domain="file" path="."/><exclude domain="database" path="."/><exclude domain="sharedpref" path="."/><exclude domain="external" path="."/></device-transfer></data-extraction-rules>');
+const javaDir='android/app/src/main/java/me/mohamedlaaribi/footy';
+await mkdir(javaDir,{recursive:true});
+for(const name of ['MainActivity.java','SecureSessionPlugin.java'])await cp(path.join(root,'android-security',name),path.join(javaDir,name));
+await cp(path.join(root,'android-security/release-signing.gradle'),'android/app/release-signing.gradle');
+const gradleFile='android/app/build.gradle';let gradle=await readFile(gradleFile,'utf8');if(!gradle.includes("apply from: 'release-signing.gradle'"))await writeFile(gradleFile,gradle+"\napply from: 'release-signing.gradle'\n");
 if(!xml.includes('android.permission.POST_NOTIFICATIONS'))xml=xml.replace('</manifest>','<uses-permission android:name="android.permission.POST_NOTIFICATIONS" /></manifest>');
 await writeFile(manifest,xml);
 // The launcher icon is a local vector: no remote image or starter branding.

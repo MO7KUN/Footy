@@ -36,3 +36,13 @@ Apply `supabase/migrations/20261026_profiles.sql` to provision the private profi
 No user passwords are stored in application profile tables or frontend application storage. The Supabase SDK manages session tokens. Profile exports exclude session tokens and passwords. Follows made as a guest remain local until explicitly imported. Signing out restores guest follows rather than exposing another account's follows.
 
 Club and league follows reuse private favorite_teams and favorite_leagues fields. Apply supabase/club-league-follows.sql for authenticated atomic follow changes. Existing favorites remain followed. Individual match follows are no longer used; historical match data is retained until personalization reset or account deletion.
+
+## Security hardening
+
+Apply all files in supabase/migrations in order, followed by supabase/club-league-follows.sql when provisioning a new installation. The 20261030132720_footy_security_hardening migration is already applied to the existing Footy project. It adds a restrictive MFA policy for enrolled users, requires MFA and an active session for self-deletion, and validates the schema and size of profile JSON. Private helpers are in footy_private, outside the exposed public API. Do not expose that schema.
+
+Run supabase/tests/security.sql as postgres to verify owner isolation, MFA, deletion and malformed-data rejection using transaction-scoped synthetic fixtures. Every fixture write is rolled back. Never test deletion against an existing account.
+
+Keep secure password change, email confirmation and secure email change enabled in Supabase Auth. Enable leaked-password protection if the project's plan supports it. Configure SMTP separately before enabling public account email flows.
+
+The website now serves its authentication SDK locally from vendor/supabase.js. Rebuild it with npm ci --ignore-scripts and npm run build:web inside mobile/, using the committed lockfile. Android uses an Android Keystore AES-GCM adapter instead of WebView local storage; upgrading clears old plaintext sessions and requires signing in again.
