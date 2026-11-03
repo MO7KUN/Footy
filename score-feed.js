@@ -7,3 +7,10 @@ export async function scoreJSON(url,fetcher=fetch){
  for(const endpoint of urls){try{const response=await fetcher(endpoint,{signal:AbortSignal.timeout(15000)});if(!response.ok)throw Error('Feed returned '+response.status);return await response.json()}catch(error){failure=error}}
  throw failure;
 }
+
+// Match routes accept numeric provider IDs. Drop malformed IDs before rendering links.
+export function scoreboardEvents(board, league) {
+  return (board.events || [])
+    .filter(event => /^(?:[0-9]+)$/.test(String(event?.id)))
+    .map(event => ({...event, league}));
+}
