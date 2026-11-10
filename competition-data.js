@@ -1,4 +1,12 @@
 // Historical records are sourced and dated separately from live feed data.
+export const domesticCups = [
+ ['eng.fa','FA Cup','England','FA','cup'],
+ ['esp.copa_del_rey','Copa del Rey','Spain','CDR','cup'],
+ ['ita.coppa_italia','Coppa Italia','Italy','CI','cup'],
+ ['ger.dfb_pokal','DFB-Pokal','Germany','DFB','cup'],
+ ['fra.coupe_de_france','Coupe de France','France','CDF','cup']
+];
+
 export const internationalCompetitions = [
  ['fifa.world','FIFA World Cup','World','WC','tournament'],
  ['uefa.euro','UEFA European Championship','Europe','EURO','tournament'],
