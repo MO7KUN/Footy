@@ -1,4 +1,4 @@
-package me.mohamedlaaribi.footy;
+package me.mohamedlaaribi.footy.production;
 import com.getcapacitor.*;
 import com.getcapacitor.annotation.CapacitorPlugin;
 @CapacitorPlugin(name="AppUpdates")

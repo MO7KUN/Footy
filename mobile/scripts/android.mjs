@@ -12,8 +12,10 @@ let xml=await readFile(manifest,'utf8');xml=xml.replace(/android:allowBackup="[^
 for(const [name,value] of Object.entries({usesCleartextTraffic:'false',fullBackupContent:'false',dataExtractionRules:'@xml/data_extraction_rules'})){const attr=new RegExp('android:'+name+'="[^"]*"','g');xml=xml.replace(attr,'');xml=xml.replace('<application','<application android:'+name+'="'+value+'"');}
 await mkdir('android/app/src/main/res/xml',{recursive:true});
 await writeFile('android/app/src/main/res/xml/data_extraction_rules.xml','<data-extraction-rules><cloud-backup><exclude domain="root" path="."/><exclude domain="file" path="."/><exclude domain="database" path="."/><exclude domain="sharedpref" path="."/><exclude domain="external" path="."/></cloud-backup><device-transfer><exclude domain="root" path="."/><exclude domain="file" path="."/><exclude domain="database" path="."/><exclude domain="sharedpref" path="."/><exclude domain="external" path="."/></device-transfer></data-extraction-rules>');
-const javaDir='android/app/src/main/java/me/mohamedlaaribi/footy';
+const javaDir='android/app/src/main/java/me/mohamedlaaribi/footy/production';
 await mkdir(javaDir,{recursive:true});
+await mkdir('android/app/src/debug/res/values',{recursive:true});
+await writeFile('android/app/src/debug/res/values/strings.xml','<resources><string name="app_name">Footy Preview</string><string name="title_activity_main">Footy Preview</string></resources>');
 for(const name of ['MainActivity.java','SecureSessionPlugin.java','AppUpdatesPlugin.java','UpdateChecks.java'])await cp(path.join(root,'android-security',name),path.join(javaDir,name));
 await cp(path.join(root,'android-security/release-signing.gradle'),'android/app/release-signing.gradle');
 const gradleFile='android/app/build.gradle';let gradle=await readFile(gradleFile,'utf8');if(!gradle.includes("apply from: 'release-signing.gradle'"))await writeFile(gradleFile,gradle+"\napply from: 'release-signing.gradle'\n");

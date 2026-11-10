@@ -1,4 +1,4 @@
-package me.mohamedlaaribi.footy;
+package me.mohamedlaaribi.footy.production;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -29,7 +29,7 @@ public class UpdateChecks extends Worker {
     public static void checkNow(Context context){WorkManager.getInstance(context).enqueueUniqueWork("footy-check-update-now",ExistingWorkPolicy.KEEP,new OneTimeWorkRequest.Builder(UpdateChecks.class).setConstraints(new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()).build());}
     public static boolean validRelease(JSONObject release){
         String url=release.optString("downloadUrl"),hash=release.optString("sha256");
-        return release.optLong("versionCode",0)>0&&"me.mohamedlaaribi.footy".equals(release.optString("packageName"))&&url.matches("https://github\\.com/MO7KUN/Footy/releases/download/[A-Za-z0-9._-]+/Footy\\.apk")&&hash.matches("[a-f0-9]{64}");
+        return release.optLong("versionCode",0)>0&&"me.mohamedlaaribi.footy.production".equals(release.optString("packageName"))&&url.matches("https://github\\.com/MO7KUN/Footy/releases/download/[A-Za-z0-9._-]+/Footy\\.apk")&&hash.matches("[a-f0-9]{64}");
     }
     @NonNull @Override public Result doWork(){
         HttpURLConnection connection=null;

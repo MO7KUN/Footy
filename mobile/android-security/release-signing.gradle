@@ -1,3 +1,11 @@
+// Keep preview installations separate from production and earlier previews.
+android {
+    buildTypes {
+        debug {
+            applicationIdSuffix '.preview'
+        }
+    }
+}
 // Loaded by the generated app project. Debug/PR builds never need signing secrets.
 if (project.hasProperty('footyRelease')) {
     def required = ['FOOTY_KEYSTORE_PATH', 'FOOTY_KEYSTORE_PASSWORD', 'FOOTY_KEY_ALIAS', 'FOOTY_KEY_PASSWORD', 'FOOTY_VERSION_CODE', 'FOOTY_VERSION_NAME']
