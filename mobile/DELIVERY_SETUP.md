@@ -10,7 +10,7 @@ Signed distribution still requires the existing stable signing credentials in th
 
 ## Firebase and push status
 
-Firebase project `footy-mo7kun-push` is created, with Android package `me.mohamedlaaribi.footy` registered. `firebase-android.json` contains public Android client configuration only. Build scripts reject service-account keys and unexpected project/package configuration. `FOOTY_GOOGLE_SERVICES_JSON` can override client configuration; `FOOTY_PUSH_BACKEND_READY=false` disables registration.
+Firebase project `footy-mo7kun-push` is created, with Android package `me.mohamedlaaribi.footy.production` registered. `firebase-android.json` contains public Android client configuration only. Build scripts reject service-account keys and unexpected project/package configuration. `FOOTY_GOOGLE_SERVICES_JSON` can override client configuration; `FOOTY_PUSH_BACKEND_READY=false` disables registration.
 
 The private sender identity has the Firebase Cloud Messaging API Admin role. Its private key and the scheduler bearer secret are stored in Footy's encrypted Supabase Vault, with the user's explicit approval. Neither secret is in GitHub or Android assets. A service-only RPC validates the scheduler credential before returning the provider credential to the Edge Function. Anonymous and signed-in clients cannot execute that RPC.
 

@@ -1,4 +1,4 @@
-package me.mohamedlaaribi.footy;
+package me.mohamedlaaribi.footy.production;
 
 import android.os.Bundle;
 import com.getcapacitor.BridgeActivity;

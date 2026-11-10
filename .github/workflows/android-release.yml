@@ -10,6 +10,9 @@ on:
         required: true
 permissions:
   contents: read
+concurrency:
+  group: android-production-release
+  cancel-in-progress: false
 jobs:
   release:
     permissions:
@@ -42,6 +45,10 @@ jobs:
           packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
           log-accepted-android-sdk-licenses: false
       - run: npm ci --ignore-scripts
+      - name: Require an increasing production version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/check-release-version.mjs
       - run: npm run build
       - run: npm test
       - run: node --test ../tests/*.test.mjs
@@ -67,9 +74,11 @@ jobs:
       - name: Verify release is signed and not debuggable
         run: |
           set -euo pipefail
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose android/app/build/outputs/apk/release/app-release.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs android/app/build/outputs/apk/release/app-release.apk > "$RUNNER_TEMP/footy-signature"
+          grep -q 'Signer #1 certificate SHA-256 digest: 0617a9f5e0f3017806285ebe597d5c8fdba07f2782edf4dd5d22d5abfe3eac59' "$RUNNER_TEMP/footy-signature"
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging android/app/build/outputs/apk/release/app-release.apk > "$RUNNER_TEMP/footy-apk-metadata"
           if grep -q application-debuggable "$RUNNER_TEMP/footy-apk-metadata"; then echo "::error::Refusing debuggable release"; exit 1; fi
+          grep -q "package: name='me.mohamedlaaribi.footy.production' versionCode='${FOOTY_VERSION_CODE}'" "$RUNNER_TEMP/footy-apk-metadata"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: Footy-Android-signed-release
@@ -84,6 +93,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          test "$(gh api repos/MO7KUN/Footy/commits/main --jq .sha)" = "$GITHUB_SHA"
           node scripts/release-manifest.mjs
           tag="android-v${FOOTY_VERSION_NAME}-${FOOTY_VERSION_CODE}"
           gh release create "$tag" release-assets/Footy.apk release-assets/Footy.aab release-assets/footy-release.json --repo "$GITHUB_REPOSITORY" --title "Footy Android $FOOTY_VERSION_NAME" --notes "Signed Android release. Install Footy.apk or use Footy.aab for store distribution."

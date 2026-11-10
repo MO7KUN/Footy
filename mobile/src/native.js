@@ -28,6 +28,10 @@ if(native){
     beforeSignOut:async()=>{await push.disable().catch(()=>{})},
     shareProfile:async text=>Share.share({title:'My Footy profile',text,dialogTitle:'Export your private profile'})
   };
+  const migration=document.createElement('section');
+  migration.className='mobile-update-panel';
+  migration.innerHTML='<h3>Moving from a preview?</h3><p>Keep the old app while you check your data here. Sign in with the same Footy account to restore your profile, saved follows and preferences.</p><p>In the old app, open Profile / Football and choose Import club &amp; league follows from this browser to save guest follows to your account. Then reopen your profile here.</p><p>Enable notifications again on this installation. Copy a custom AI endpoint from the old Settings if you used one. Confirm your data before removing any old app.</p>';
+  document.querySelector('#settingsDialog .dialog-body').append(migration);
   const updatePanel=document.createElement('section');updatePanel.className='mobile-update-panel';updatePanel.innerHTML='<h3>App updates</h3><p id="mobileUpdateStatus">Checks for signed releases daily, even when the app is closed. Android may delay checks to save battery.</p><button id="checkMobileUpdate" type="button">Check for updates now</button>';document.querySelector('#settingsDialog .dialog-body').append(updatePanel);
   document.querySelector('#checkMobileUpdate').onclick=async()=>{try{await updates.checkNow();document.querySelector('#mobileUpdateStatus').textContent='Update check queued. You’ll be notified if a newer signed release is available.'}catch{document.querySelector('#mobileUpdateStatus').textContent='Could not queue the update check. Try again later.'}};
   document.addEventListener('click',async event=>{if(event.target.closest('#settings,#alerts')){try{const status=await updates.status();document.querySelector('#mobileUpdateStatus').textContent='Daily checks enabled. '+(status.lastChecked?'Last checked '+new Date(status.lastChecked).toLocaleString()+'. ':'')+(status.latestVersionName?'Latest signed version: '+status.latestVersionName+'.':'No signed release has been found yet.')}catch{}}},true);

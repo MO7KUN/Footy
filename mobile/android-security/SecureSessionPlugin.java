@@ -1,4 +1,4 @@
-package me.mohamedlaaribi.footy;
+package me.mohamedlaaribi.footy.production;
 
 import android.content.Context;
 import android.content.SharedPreferences;
