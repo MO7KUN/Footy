@@ -1,7 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {existsSync} from 'node:fs';
-const {positionGroup,buildTies,statisticalXI,tableGroups}=await import(existsSync(new URL('../dist/football-model.js',import.meta.url))?'../dist/football-model.js':'../football-model.js');
+const {positionGroup,buildTies,statisticalXI,tableGroups,teamSeasonCompetitions}=await import(existsSync(new URL('../dist/football-model.js',import.meta.url))?'../dist/football-model.js':'../football-model.js');
+
+test('competition options include only the team’s fixtures in the selected season',()=>{
+ const event=(league,year,id,date='2026-11-10')=>({league,season:{year},date,competitions:[{competitors:[{team:{id}},{id:'other'}]}]});
+ const fixtures=[event('uefa.nations',2026,164),event('uefa.nations',2026,'164','2027-03-20'),event('fifa.friendly',2026,'164'),event('fifa.worldq.uefa',2025,'164'),event('eng.1',2026,359),event('club.friendly',2026,359)];
+ assert.deepEqual(teamSeasonCompetitions(fixtures,'164',2026).map(x=>x.slug),['uefa.nations','fifa.friendly']);
+ assert.deepEqual(teamSeasonCompetitions(fixtures,359,'2026').map(x=>x.slug),['eng.1','club.friendly']);
+});
 
 test('football positions distinguish midfielders and forwards from defenders',()=>{
  for(const abbreviation of ['D','CD-L','LB','RB','WB'])assert.equal(positionGroup({abbreviation}),'D');

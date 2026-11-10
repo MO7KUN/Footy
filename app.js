@@ -1,13 +1,16 @@
 import {matchesStatus,scoreJSON,scoreboardEvents} from './score-feed.js';
-import {leagueBadge,uiIcon} from './badges.js';
+import {domesticCups,internationalCompetitions} from './competition-data.js?v=domestic-cups-1';
+import {leagueBadge,uiIcon} from './badges.js?v=visible-1';
 import { followsMatch, followingCount } from './follow-model.js';
-import { initializeFootballPages, routeFootballPages, isFootballRoute, leaveFootballPages, refreshFootballFollows } from './football-pages.js?v=delivery-1';
-import { initializeProfiles, renderProfile, isProfileRoute, accountPreferences, accountUser, setAccountFollow, registerPushDevice, removePushDevice } from './profiles.js?v=delivery-1';
+import { initializeFootballPages, routeFootballPages, isFootballRoute, leaveFootballPages, refreshFootballFollows } from './football-pages.js?v=visible-1';
+import { initializeProfiles, renderProfile, isProfileRoute, accountPreferences, accountUser, setAccountFollow, registerPushDevice, removePushDevice } from './profiles.js?v=visible-1';
 const $ = s => document.querySelector(s);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const safeURL = value => { try { const u = new URL(value); return u.protocol === 'https:' || u.protocol === 'http:' ? esc(u.href.replace(/^http:/,'https:')) : ''; } catch { return ''; } };
 const leagues = [
- ['eng.1','Premier League','England','EN'],['esp.1','LaLiga','Spain','ES'],['ita.1','Serie A','Italy','IT'],['ger.1','Bundesliga','Germany','DE'],['fra.1','Ligue 1','France','FR'],['uefa.champions','Champions League','Europe','CL'],['uefa.europa','Europa League','Europe','EL'],['usa.1','MLS','United States','US'],['ksa.1','Saudi Pro League','Saudi Arabia','SA'],['por.1','Primeira Liga','Portugal','PT']
+ ['eng.1','Premier League','England','EN'],['esp.1','LaLiga','Spain','ES'],['ita.1','Serie A','Italy','IT'],['ger.1','Bundesliga','Germany','DE'],['fra.1','Ligue 1','France','FR'],['uefa.champions','Champions League','Europe','CL'],['uefa.europa','Europa League','Europe','EL'],['usa.1','MLS','United States','US'],['ksa.1','Saudi Pro League','Saudi Arabia','SA'],['por.1','Primeira Liga','Portugal','PT'],
+ ...domesticCups,
+ ...internationalCompetitions
 ];
 const API='https://site.api.espn.com/apis/site/v2/sports/soccer/';
 const store = {get(key, fallback){try{return JSON.parse(localStorage.getItem('footy:'+key)) ?? fallback}catch{return fallback}},set(key,val){try{localStorage.setItem('footy:'+key,JSON.stringify(val))}catch{}}};
@@ -26,7 +29,7 @@ const status=e=>e?.status||e?.competitions?.[0]?.status||{};
 const matchKey=e=>`${e.league}:${e.id}`;
 const isFollowing=e=>followsMatch(e,followedClubs,followedLeagues);
 const isEntityFollowed=(kind,id)=>kind==='club'?followedClubs.some(t=>String(t.id)===String(id)):followedLeagues.includes(id);
-const image=(url,alt='',cls='')=>safeURL(url)?`<img src="${safeURL(url)}" alt="${esc(alt)}" class="${cls}" loading="lazy" referrerpolicy="no-referrer">`:'';
+const image=(url,alt='',cls='')=>safeURL(url)?`<img data-footy-src="${safeURL(url)}" alt="${esc(alt)}" class="${cls}" loading="lazy" referrerpolicy="no-referrer">`:'';
 const empty=(title,desc)=>`<div class="empty"><strong>${esc(title)}</strong>${esc(desc)}</div>`;
 const json=scoreJSON;
 function toast(text){$('#toast').textContent=text;$('#toast').style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('#toast').style.display='none',4500)}

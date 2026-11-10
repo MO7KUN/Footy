@@ -1,4 +1,4 @@
-import {leagueBadge} from './badges.js';
+import {leagueBadge} from './badges.js?v=visible-1';
 import {createAccountClient} from './auth-client.js';
 import {needsSecondFactor,reauthenticate} from './auth-security.js';
 import { tableGroups } from './football-model.js';

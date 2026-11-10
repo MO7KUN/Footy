@@ -1,10 +1,68 @@
-const competitionLogos={'eng.1':'23','esp.1':'15','ita.1':'12','ger.1':'10','fra.1':'9','uefa.champions':'2','uefa.europa':'2310','usa.1':'19','ksa.1':'2488','por.1':'14'};
+const competitionLogos={'eng.1':'23','esp.1':'15','ita.1':'12','ger.1':'10','fra.1':'9','uefa.champions':'2','uefa.europa':'2310','usa.1':'19','ksa.1':'2488','por.1':'14',
+ 'eng.fa':'40',
+ 'esp.copa_del_rey':'80',
+ 'ita.coppa_italia':'2192',
+ 'ger.dfb_pokal':'2061',
+ 'fra.coupe_de_france':'182',
+ 'fifa.world':'4',
+ 'uefa.euro':'74',
+ 'uefa.nations':'2395',
+ 'conmebol.america':'83',
+ 'caf.nations':'76',
+ 'afc.asian.cup':'2243',
+ 'concacaf.gold':'59',
+ 'concacaf.nations.league':'2406',
+ 'fifa.wwc':'60',
+ 'uefa.weuro':'2381',
+ 'fifa.worldq.uefa':'67',
+ 'fifa.worldq.conmebol':'65',
+ 'fifa.worldq.caf':'63',
+ 'fifa.worldq.afc':'62',
+ 'fifa.worldq.concacaf':'64',
+ 'fifa.worldq.ofc':'66',
+ 'fifa.friendly':'53',
+ 'fifa.friendly.w':'70'
+};
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const safe=url=>{try{const parsed=new URL(url);return parsed.protocol==='https:'?esc(parsed.href):''}catch{return ''}};
 export function uiIcon(kind){const paths=kind==='club'?'<path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6l-8-3Z"/><path d="M9 12h6M12 9v6"/>':kind==='standings'?'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11M3 14h18"/>':'<path d="M8 3h8v5a4 4 0 0 1-8 0V3ZM8 5H4v2a4 4 0 0 0 4 4M16 5h4v2a4 4 0 0 1-4 4M12 12v6M8 21h8M9 18h6"/>';return '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+paths+'</svg>'}
-function badge(url,label,kind){return '<span class="footy-badge '+kind+'" title="'+esc(label)+'" aria-hidden="true">'+(safe(url)?'<img src="'+safe(url)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<span class="badge-fallback">'+uiIcon('competition')+'</span></span>'}
+function badge(url,label,kind){return '<span class="footy-badge '+kind+'" title="'+esc(label)+'" aria-hidden="true">'+(safe(url)?'<img data-footy-src="'+safe(url)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<span class="badge-fallback">'+uiIcon('competition')+'</span></span>'}
 export function leagueBadge(id,label='',url=''){return badge(url||(competitionLogos[id]?'https://a.espncdn.com/i/leaguelogos/soccer/500/'+competitionLogos[id]+'.png':''),label,'competition-badge')}
 export function clubBadge(team){return badge(team?.logo||team?.logos?.[0]?.href,team?.displayName||'Club','club-badge')}
+
+// Native lazy loading can fetch images before they reach the viewport.
+const deferredImage='img[data-footy-src]';
+function loadImage(image){
+ const url=image.getAttribute('data-footy-src');
+ if(!url)return;
+ image.removeAttribute('data-footy-src');
+ image.src=url;
+}
+const viewportObserver=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
+ for(const {target,isIntersecting,intersectionRatio} of entries){
+  if(!isIntersecting||!intersectionRatio||!target.isConnected)continue;
+  viewportObserver.unobserve(target);
+  loadImage(target);
+ }
+},{threshold:0.000001}):null;
+function visitImages(node,visit){
+ if(node.nodeType!==1)return;
+ if(node.matches(deferredImage))visit(node);
+ node.querySelectorAll(deferredImage).forEach(visit);
+}
+function watchImage(image){
+ if(!image.isConnected)return;
+ if(viewportObserver)viewportObserver.observe(image);
+ else loadImage(image);
+}
+new MutationObserver(records=>{
+ if(viewportObserver)for(const record of records)for(const node of record.removedNodes){
+  visitImages(node,image=>{if(!image.isConnected)viewportObserver.unobserve(image)});
+ }
+ for(const record of records)for(const node of record.addedNodes)visitImages(node,watchImage);
+}).observe(document.documentElement,{childList:true,subtree:true});
+document.querySelectorAll(deferredImage).forEach(watchImage);
+
 // Keep a visible local icon if a remote badge is missing or unavailable offline.
 document.addEventListener('error',event=>{const img=event.target;if(img?.matches?.('.footy-badge img'))img.remove()},true);
 document.addEventListener('change',event=>{const select=event.target;if(select?.matches?.('select[data-competition-icon]')){const current=select.closest('.icon-select')?.querySelector('.footy-badge');if(current)current.outerHTML=leagueBadge(select.value,select.selectedOptions[0]?.textContent||'Competition')}},true);
