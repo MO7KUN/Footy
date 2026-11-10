@@ -1,4 +1,24 @@
 // Historical records are sourced and dated separately from live feed data.
+export const internationalCompetitions = [
+ ['fifa.world','FIFA World Cup','World','WC','tournament'],
+ ['uefa.euro','UEFA European Championship','Europe','EURO','tournament'],
+ ['uefa.nations','UEFA Nations League','Europe','UNL','tournament'],
+ ['conmebol.america','Copa América','South America','CA','tournament'],
+ ['caf.nations','Africa Cup of Nations','Africa','AFCON','tournament'],
+ ['afc.asian.cup','AFC Asian Cup','Asia','AFC','tournament'],
+ ['concacaf.gold','Concacaf Gold Cup','North & Central America','GC','tournament'],
+ ['concacaf.nations.league','Concacaf Nations League','North & Central America','CNL','tournament'],
+ ['fifa.wwc',"FIFA Women's World Cup",'World','WWC','tournament'],
+ ['uefa.weuro',"UEFA Women's Euro",'Europe','WE','tournament'],
+ ...[
+  ['uefa','Europe','UEFA'],['conmebol','South America','CONMEBOL'],['caf','Africa','CAF'],
+  ['afc','Asia','AFC'],['concacaf','North & Central America','Concacaf'],['ofc','Oceania','OFC']
+ ].map(([slug,region,federation])=>['fifa.worldq.'+slug,'World Cup Qualifying · '+federation,region,federation,'qualifier']),
+ ['fifa.friendly','International Friendlies','World','INT','friendly'],
+ ['fifa.friendly.w',"Women's International Friendlies",'World','WINT','friendly'],
+ ['club.friendly','Club Friendlies','World','CF','friendly']
+];
+
 export const records = {
  'eng.1': {name:'Manchester United',titles:13,scope:'Premier League era, since 1992',source:'https://www.premierleague.com/en/news/4662306'},
  'esp.1': {name:'Real Madrid',titles:36,scope:'Spanish top-flight titles',source:'https://www.realmadrid.com/static/en/about-real-madrid/honours/football/'},
