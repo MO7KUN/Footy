@@ -1,8 +1,8 @@
 import {matchesStatus,scoreJSON,scoreboardEvents} from './score-feed.js';
 import {domesticCups,internationalCompetitions} from './competition-data.js?v=domestic-cups-1';
-import {leagueBadge,uiIcon} from './badges.js';
+import {leagueBadge,uiIcon} from './badges.js?v=directory-1';
 import { followsMatch, followingCount } from './follow-model.js';
-import { initializeFootballPages, routeFootballPages, isFootballRoute, leaveFootballPages, refreshFootballFollows } from './football-pages.js?v=domestic-cups-1';
+import { initializeFootballPages, routeFootballPages, isFootballRoute, leaveFootballPages, refreshFootballFollows } from './football-pages.js?v=directory-1';
 import { initializeProfiles, renderProfile, isProfileRoute, accountPreferences, accountUser, setAccountFollow, registerPushDevice, removePushDevice } from './profiles.js?v=delivery-1';
 const $ = s => document.querySelector(s);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

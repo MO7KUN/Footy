@@ -1,4 +1,4 @@
-import {leagueBadge,clubBadge,uiIcon} from './badges.js';
+import {leagueBadge,clubBadge,uiIcon} from './badges.js?v=directory-1';
 import {records,recordDate,formats} from './competition-data.js?v=domestic-cups-1';
 import {tableGroups,stat,score,sides,gameStatus,buildTies,statisticalXI,positionGroup,teamSeasonCompetitions} from './football-model.js?v=team-competitions-1';
 const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -27,10 +27,76 @@ export function initializeFootballPages(options){bridge=options;const nav=$('hea
 export function isFootballRoute(){return /^#\/(leagues|clubs|league\/|club\/)/.test(location.hash)}
 export function leaveFootballPages(){epoch++;tabEpoch++}
 export async function routeFootballPages(){const key=++epoch;tabEpoch++;const [path,query='']=location.hash.slice(2).split('?'),parts=path.split('/');activateNav(parts[0].startsWith('club')?'clubs':'leagues');if(parts[0]==='leagues'){directory();return}if(parts[0]==='clubs'){await clubDirectory(key);return}if(!valid(parts[1])||(parts[0]==='club'&&!/^\d+$/.test(parts[2]||''))){$('#main').innerHTML=note('Page not found','Choose a competition or club from the directory.');return}const year=Number(new URLSearchParams(query).get('season'))||null;await entityPage(parts[0],parts[1],parts[2],year,key)}
-function directory(){document.title='Leagues — Footy';$('#main').innerHTML=`<section class="football-intro"><div class="eyebrow">THE WORLD’S GAME</div><h1>Every league.<br><em>A different story.</em></h1><p>Explore the competitions, the contenders and the numbers behind the game.</p></section><div class="football-section-title"><h2>Find your competition</h2><span>${bridge.leagues.length} competitions</span></div><div class="competition-grid">${bridge.leagues.map((l,i)=>`<a class="competition-tile tint-${i%4}" href="${leagueURL(l[0])}"><div class="competition-monogram">${leagueBadge(l[0],l[1])}</div><span>${l[2]}</span><h3>${l[1]}</h3><p>${l[4]==='friendly'?'Friendly fixtures & results':l[4]==='cup'?'Domestic cup · Knockout rounds':l[4]?'National teams · Fixtures & results':l[0].startsWith('uefa')?'League phase & knockout rounds':'Fixtures, standings & player leaders'}</p><strong>Explore competition <b>↗</b></strong></a>`).join('')}</div>`}
-async function clubDirectory(key){document.title='Clubs — Footy';state={kind:'clubs',league:state.league||bridge.leagues[0][0]};$('#main').innerHTML=`<section class="football-intro"><div class="eyebrow">FIND YOUR COLORS</div><h1>More than a badge.<br><em>Your club.</em></h1><p>Meet the squads. Follow the season. Find your next matchday.</p></section><div class="directory-tools"><label>Competition<span class="icon-select">${leagueBadge(state.league,name(state.league))}<select data-competition-icon id="clubLeague">${bridge.leagues.map(l=>`<option value="${l[0]}" ${l[0]===state.league?'selected':''}>${l[1]}</option>`).join('')}</select></span></label><label>Search teams<input id="clubSearch" type="search" placeholder="Find a team…"></label></div><div id="clubCards">${loading('Loading clubs…')}</div>`;$('#clubLeague').onchange=()=>{state.league=$('#clubLeague').value;loadDirectoryClubs(epoch)};$('#clubSearch').oninput=renderClubCards;await loadDirectoryClubs(key)}
-async function loadDirectoryClubs(key){const league=state.league;$('#clubCards').innerHTML=loading('Loading clubs…');try{const table=await get(`${TABLE}${league}/standings`).catch(()=>null);const d=teamsOf(table).length?table:await get(`${SITE}${league}/teams`);if(key!==epoch||state.league!==league)return;state.clubs=teamsOf(d);renderClubCards()}catch(e){if(key===epoch)$('#clubCards').innerHTML=note('Clubs could not load','Try another competition or return to this page in a moment.')}}
-function renderClubCards(){const q=$('#clubSearch')?.value.toLowerCase().trim()||'',clubs=(state.clubs||[]).filter(t=>t.displayName.toLowerCase().includes(q));$('#clubCards').innerHTML=clubs.length?`<div class="club-grid">${clubs.map(t=>`<a class="club-tile" href="${clubURL(state.league,t.id)}">${image(logo(t),t.displayName)}<h3>${esc(t.displayName)}</h3><p>${esc(name(state.league))}</p><span>Clubhouse ↗</span></a>`).join('')}</div>`:note('No clubs found','Try another team name or competition.')}
+const competitionTypes=[
+ ['club','Club leagues and continental cups'],['cup','Domestic cups'],
+ ['tournament','National team tournaments'],['qualifier','World Cup qualifiers'],['friendly','Friendlies']
+];
+const competitionType=competition=>competition[4]||'club';
+const searchText=value=>String(value??'').normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
+function filterOptions(values,label){
+ return '<option value="">'+label+'</option>'+values.map(([value,name])=>'<option value="'+esc(value)+'">'+esc(name)+'</option>').join('');
+}
+function directory(){
+ document.title='Competitions — Footy';
+ const regions=[...new Set(bridge.leagues.map(competition=>competition[2]))].sort().map(region=>[region,region]);
+ $('#main').innerHTML='<section class="football-intro"><div class="eyebrow">THE WORLD’S GAME</div><h1>Explore competitions</h1><p>Find fixtures, results and standings from around the world.</p></section>'+
+  '<div class="directory-tools"><label>Search competitions<input id="competitionSearch" type="search" placeholder="Find a competition…"></label>'+
+  '<label>Type<select id="competitionType">'+filterOptions(competitionTypes,'All types')+'</select></label>'+
+  '<label>Region<select id="competitionRegion">'+filterOptions(regions,'All regions')+'</select></label></div>'+
+  '<div class="football-section-title"><h2>Find your competition</h2><span id="competitionCount" role="status"></span></div><div id="competitionCards"></div>';
+ const render=()=>{
+  const query=searchText($('#competitionSearch').value.trim());
+  const type=$('#competitionType').value,region=$('#competitionRegion').value;
+  const competitions=bridge.leagues.filter(item=>(!type||competitionType(item)===type)&&(!region||item[2]===region)&&searchText(item[1]+' '+item[2]).includes(query));
+  $('#competitionCount').textContent=competitions.length+(competitions.length===1?' competition':' competitions');
+  const cards=competitions.map(([id,label,region],index)=>
+   '<a class="competition-tile tint-'+(index%4)+'" href="'+leagueURL(id)+'"><div class="competition-monogram">'+leagueBadge(id,label)+'</div><span>'+esc(region)+'</span><h3>'+esc(label)+'</h3><strong>Explore competition <b>↗</b></strong></a>');
+  $('#competitionCards').innerHTML=cards.length?'<div class="competition-grid">'+cards.join('')+'</div>':note('No competitions found','Try another search, type, or region.');
+ };
+ $('#competitionSearch').oninput=render;
+ $('#competitionType').onchange=render;
+ $('#competitionRegion').onchange=render;
+ render();
+}
+async function clubDirectory(key){
+ document.title='Clubs & National Teams — Footy';
+ const initial=bridge.leagues.find(item=>item[0]===state.league)||bridge.leagues[0];
+ state={kind:'clubs',league:initial[0],clubs:null};
+ $('#main').innerHTML='<section class="football-intro"><div class="eyebrow">FIND YOUR COLORS</div><h1>Clubs &amp; national teams</h1><p>Meet the squads and find your next matchday.</p></section>'+
+  '<div class="directory-tools"><label>Team type<select id="teamType">'+filterOptions([['club','Clubs'],['national','National teams']],'All teams')+'</select></label>'+
+  '<label>Competition<span class="icon-select">'+leagueBadge(initial[0],initial[1])+'<select data-competition-icon id="clubLeague"></select></span></label>'+
+  '<label>Search teams<input id="clubSearch" type="search" placeholder="Find a team…"></label></div><div id="clubCards" aria-live="polite"></div>';
+ const select=$('#clubLeague');
+ function populateCompetitions(){
+  const type=$('#teamType').value;
+  const options=bridge.leagues.filter(([id])=>!type||(national(id)?'national':'club')===type);
+  if(!options.some(([id])=>id===state.league))state.league=options[0][0];
+  select.innerHTML=options.map(([id,label])=>'<option value="'+esc(id)+'">'+esc(label)+'</option>').join('');
+  select.value=state.league;
+  select.closest('.icon-select').querySelector('.footy-badge').outerHTML=leagueBadge(state.league,name(state.league));
+ }
+ $('#teamType').onchange=()=>{populateCompetitions();loadDirectoryClubs(epoch)};
+ select.onchange=()=>{state.league=select.value;loadDirectoryClubs(epoch)};
+ $('#clubSearch').oninput=renderClubCards;
+ populateCompetitions();
+ await loadDirectoryClubs(key);
+}
+async function loadDirectoryClubs(key){
+ const view=state,league=view.league;
+ view.clubs=null;
+ $('#clubCards').innerHTML=loading('Loading teams…');
+ try{
+  const table=await get(TABLE+league+'/standings').catch(()=>null);
+  const teams=teamsOf(table);
+  const result=teams.length?teams:teamsOf(await get(SITE+league+'/teams'));
+  if(key!==epoch||state!==view||view.league!==league)return;
+  view.clubs=result;
+  renderClubCards();
+ }catch{
+  if(key===epoch&&state===view&&view.league===league)$('#clubCards').innerHTML=note('Teams could not load','Try another competition or return to this page in a moment.');
+ }
+}
+function renderClubCards(){if(!state.clubs)return;const q=searchText($('#clubSearch')?.value.trim()),clubs=state.clubs.filter(t=>searchText(t.displayName).includes(q));$('#clubCards').innerHTML=clubs.length?`<div class="club-grid">${clubs.map(t=>`<a class="club-tile" href="${clubURL(state.league,t.id)}">${image(logo(t),t.displayName)}<h3>${esc(t.displayName)}</h3><p>${esc(name(state.league))}</p><span>Clubhouse ↗</span></a>`).join('')}</div>`:note('No teams found','Try another team name or competition.')}
 async function entityPage(kind,league,id,year,key){$('#main').innerHTML=loading(kind==='club'?'Opening the clubhouse…':'Opening the competition…');const month=year?(calendarYear(league)?`${year}-${nowMonth().slice(5)}`:`${year+1}-05`):nowMonth();const [board,table,clubs,club,roster]=await Promise.allSettled([get(`${SITE}${league}/scoreboard?dates=${month.replace('-','')}`),(friendly(league)||cup(league))?Promise.resolve(null):get(`${TABLE}${league}/standings${year?'?season='+year:''}`),kind==='league'&&category(league)?get(`${SITE}${league}/teams`).catch(()=>null):Promise.resolve(null),kind==='club'?get(`${SITE}${league}/teams/${id}/schedule${year?'?season='+year:''}`):Promise.resolve(null),kind==='club'?get(`${SITE}${league}/teams/${id}/roster${year?'?season='+year:''}`):Promise.resolve(null)]);if(key!==epoch)return;const value=r=>r.status==='fulfilled'?r.value:null;const b=value(board),c=value(roster)?.team||value(club)?.team;if(kind==='club'&&!c){$('#main').innerHTML=`<a class="back" href="#/clubs">← All clubs</a>${note('Club could not load','The provider may not cover this club in the selected competition.')}`;return}state={kind,league,id,year:year||b?.leagues?.[0]?.season?.year||value(table)?.season?.year||new Date().getUTCFullYear(),month,board:b,table:value(table),clubs:teamsOf(value(clubs)||value(table)),club:c,roster:value(roster),schedule:value(club),tab:'overview',key,failures:[board,table,...(kind==='club'?[roster]:[])].filter(r=>r.status==='rejected').length};document.title=`${kind==='club'?c.displayName:name(league)} — Footy`;entityShell();await renderTab()}
 function entityShell(){const s=state,league=s.board?.leagues?.[0],club=s.club;const title=club?.displayName||name(s.league),badge=club?logo(club):league?.logos?.[0]?.href;const years=[...new Set([new Date().getUTCFullYear(),s.year,...Array.from({length:4},(_,i)=>s.year-i)])].sort((a,b)=>b-a);const currentTable=groups(s.table).flatMap(g=>g.entries).find(e=>e.team.id===s.id);const tabs=s.kind==='club'?[['overview',national(s.league)?'Team overview':'Club overview'],['calendar','Match calendar'],['squad','Squad'],['standings','Standings'],['bracket','Knockout graph']]:[['overview','Overview'],['standings','Standings'],['stats','Player stats'],['xi','Gameweek XI'],['bracket','Knockout graph'],['calendar','Match calendar'],['clubs',national(s.league)?'National teams':'Clubs']];const visibleTabs=tabs.filter(([id])=>s.kind==='club'||(friendly(s.league)?id==='overview'||id==='calendar':!cup(s.league)||id!=='standings'));$('#main').innerHTML=`<a class="back" href="#/${s.kind==='club'?'clubs':'leagues'}">← All ${s.kind==='club'?'clubs':'competitions'}</a><section class="entity-hero">${image(badge,title)}<div><div class="eyebrow">${s.kind==='club'?(national(s.league)?'NATIONAL TEAM':'THE CLUBHOUSE'):esc(bridge.leagues.find(l=>l[0]===s.league)?.[2]||'FOOTBALL')}</div><h1>${esc(title)}</h1><p>${esc(club?.standingSummary||league?.season?.displayName||s.year+' season')}</p></div>${entityFollowButton(s.kind,{id:s.kind==='club'?s.id:s.league,name:title,league:s.league})}<label class="season-control">Season<select id="entitySeason">${years.map(y=>`<option value="${y}" ${Number(s.year)===y?'selected':''}>${calendarYear(s.league)?y:y+'/'+String(y+1).slice(2)}</option>`).join('')}</select></label></section>${s.failures?'<p class="football-warning">Some sections could not load. Available coverage is shown below; missing coverage does not mean no fixtures or players exist.</p>':''}<nav class="entity-tabs" aria-label="Page sections">${visibleTabs.map(t=>`<button data-entity-tab="${t[0]}" class="${s.tab===t[0]?'selected':''}">${t[0]==='standings'?uiIcon('standings'):''}${t[1]}</button>`).join('')}</nav><section id="entityContent"></section><p class="football-source">Live coverage: ESPN · Tables and fixtures reflect the provider’s latest published data. ${club&&currentTable?'Your club is highlighted in the table.':''}</p>`;refreshFootballFollows();$('#entitySeason').onchange=()=>{location.hash=s.kind==='club'?`/club/${s.league}/${s.id}?season=${$('#entitySeason').value}`:`/league/${s.league}?season=${$('#entitySeason').value}`};document.querySelectorAll('[data-entity-tab]').forEach(b=>b.onclick=()=>{s.tab=b.dataset.entityTab;document.querySelectorAll('[data-entity-tab]').forEach(x=>x.classList.toggle('selected',x===b));renderTab()})}
 async function renderTab(){const key=++tabEpoch,s=state;$('#entityContent').innerHTML=loading('Loading '+s.tab+'…');try{if(s.tab==='overview')await overview(key);else if(s.tab==='standings'){if(s.kind==='club')await clubStandings(key);else $('#entityContent').innerHTML=standingsHTML(s.table,s.league,s.id);}else if(s.tab==='squad')squad();else if(s.tab==='clubs')$('#entityContent').innerHTML=clubTiles(s.clubs,s.league);else if(s.tab==='stats')await leaderStats(key);else if(s.tab==='calendar')await calendar(key);else if(s.tab==='bracket')await bracket(key);else if(s.tab==='xi')await xi(key);}catch(e){if(key===tabEpoch)$('#entityContent').innerHTML=`${note('This section could not load',e.message||'Please try again.')}<button id="retryEntity">Try again</button>`;if($('#retryEntity'))$('#retryEntity').onclick=()=>renderTab()}}
