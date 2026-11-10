@@ -4,6 +4,17 @@ export function stat(entry,name){const v=entry?.stats?.find(s=>s.name===name);re
 export function score(c){return typeof c?.score==='object' ? c.score.displayValue??c.score.value : c?.score}
 export function sides(event){return [...(event.competitions?.[0]?.competitors||[])].sort((a,b)=>(a.homeAway==='home'?0:1)-(b.homeAway==='home'?0:1))}
 export function gameStatus(event){return event.status||event.competitions?.[0]?.status||{}}
+export function teamSeasonCompetitions(events, teamId, year){
+ const competitions=new Map();
+ for(const event of events){
+  const slug=event.league;
+  const season=event.season?.year??event.date?.slice(0,4);
+  if(!/^[a-z0-9.]+$/.test(slug||'')||Number(season)!==Number(year))continue;
+  if(!sides(event).some(side=>String(side.id??side.team?.id)===String(teamId)))continue;
+  competitions.set(slug,{slug,name:event.competition?.name||slug});
+ }
+ return [...competitions.values()];
+}
 export function roundInfo(event){const c=event.competitions?.[0]||{},text=[event.season?.slug,c.series?.title,c.altGameNote].filter(Boolean).join(' ').toLowerCase();if(/semifinal|semi-final|conference.final/.test(text))return {rank:3,label:/conference/.test(text)?'Conference finals':'Semi-finals'};if(/quarterfinal|quarter-final/.test(text))return {rank:2,label:'Quarter-finals'};if(/round.of.16|round-of-16/.test(text))return {rank:1,label:'Round of 16'};if(/round.of.32|play.off|playoff|wild.card|first.round|round.one/.test(text))return {rank:0,label:'Play-offs'};if(/(?:^|[\s,-])final(?:s)?(?:$|[\s,])|mls.cup/.test(text)&&!/league.phase|qualif/.test(text))return {rank:4,label:'Final'};return null}
 export function buildTies(events){const map=new Map();for(const e of events){const round=roundInfo(e),teams=sides(e);if(!round||teams.length!==2)continue;const key=round.rank+':'+teams.map(t=>t.id||t.team.id).sort().join('-');if(!map.has(key))map.set(key,{id:key,round,teams:teams.map(t=>({id:t.id||t.team.id,team:t.team})),games:[]});map.get(key).games.push(e)}const ties=[...map.values()];for(const tie of ties){tie.games.sort((a,b)=>new Date(a.date)-new Date(b.date));const last=tie.games.at(-1),comp=last.competitions[0],series=comp.series,seriesWinner=series?.completed&&series.competitors?.find(t=>t.winner);const singleWinner=gameStatus(last).type?.completed&&tie.games.length===1&&(!comp.leg||comp.leg.value===2)&&sides(last).find(t=>t.advance||t.winner);tie.winner=seriesWinner?.id||singleWinner?.id||null;tie.aggregate=series?.completed?Object.fromEntries((series.competitors||[]).map(t=>[t.id,t.aggregateScore])):null;}
  return ties.sort((a,b)=>a.round.rank-b.round.rank||new Date(a.games[0].date)-new Date(b.games[0].date))}
