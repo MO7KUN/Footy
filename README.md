@@ -54,6 +54,10 @@ Club and league follows reuse private favorite_teams and favorite_leagues fields
 
 Club calendars and recent/upcoming lists combine the provider’s completed/live and upcoming all-competition schedules, deduplicate fixtures, and keep each fixture’s competition logo and match link. Standings competition selection appears above the tables and stays within the current tab.
 
+## Windows desktop app
+
+Download Footy for Windows 10/11 x64 from the website's [download page](https://mohamedlaaribi.me/Footy/download.html). The dedicated desktop window uses the live website and the same accounts. Internet is required. See [desktop setup and release instructions](desktop/README.md). Desktop installers are currently unsigned and updates are installed manually.
+
 ## Android app
 
 The Android version lives in `mobile/` and uses the same Supabase accounts, private profiles and follows. See [Android setup and preview installation](mobile/README.md). The Android preview APK workflow builds an installable debug APK on GitHub Actions.
