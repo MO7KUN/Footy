@@ -1,0 +1,39 @@
+{
+  "name": "footy-desktop",
+  "productName": "Footy",
+  "version": "1.0.0",
+  "description": "Footy live scores, clubs and competitions for Windows",
+  "author": "Footy",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test tests/*.test.cjs",
+    "smoke": "electron . --smoke-test",
+    "dist": "electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "45.3.1",
+    "electron-builder": "26.18.0"
+  },
+  "overrides": {
+    "app-builder-lib": { "minimatch": "11.0.1" },
+    "@electron/universal": { "minimatch": "11.0.1" }
+  },
+  "build": {
+    "appId": "com.footy.desktop",
+    "asar": true,
+    "directories": { "output": "release" },
+    "files": ["main.cjs", "policy.cjs", "offline.html", "icon.ico"],
+    "win": { "icon": "icon.ico", "target": ["nsis"], "artifactName": "Footy-Windows-Setup.exe" },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}

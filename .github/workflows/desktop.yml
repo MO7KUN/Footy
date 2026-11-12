@@ -1,0 +1,72 @@
+name: Windows desktop app
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths: ['desktop/**', 'download*', '.github/workflows/desktop.yml']
+  push:
+    branches: [main, 'feature/**']
+    paths: ['desktop/**', 'download*', '.github/workflows/desktop.yml']
+permissions:
+  contents: read
+concurrency:
+  group: desktop-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: node --test ../tests/*.test.mjs
+      - run: npm run smoke
+      - run: npm run dist
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Compute installer checksum
+        run: |
+          $hash = (Get-FileHash release/Footy-Windows-Setup.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  Footy-Windows-Setup.exe" | Set-Content release/SHA256SUMS.txt -Encoding ascii
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Footy-Windows
+          path: |
+            desktop/release/Footy-Windows-Setup.exe
+            desktop/release/SHA256SUMS.txt
+            desktop/smoke.png
+          if-no-files-found: error
+          retention-days: 30
+  publish:
+    needs: windows
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: Footy-Windows
+          path: windows-release
+      - name: Publish Windows installer independently of Android releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./desktop/package.json').version")"
+          tag="desktop-v${version}"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $tag already exists. Bump desktop/package.json version for a new desktop release."
+            exit 0
+          fi
+          gh release create "$tag" windows-release/Footy-Windows-Setup.exe windows-release/SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest=false --title "Footy for Windows $version" --notes "Windows 10/11 x64 installer. Internet connection required. Sign in with your existing Footy account. This installer is not code-signed; Windows may show an unknown-publisher warning. SHA256SUMS.txt contains the installer checksum. Updates are downloaded manually from the Footy website."
