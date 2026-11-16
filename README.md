@@ -1,5 +1,11 @@
 # Footy
 
+[Open the live match centre](https://mohamedlaaribi.me/Footy/)
+
+Footy is a responsive football match centre with live scores, fixtures, standings, and knockout brackets. The browser app has companion Android and desktop builds. The repository separates feed access and football rules from the UI. Coverage depends on the data provider.
+
+Run the football model checks with `node --test tests/football-model.test.mjs`.
+
 ## Leagues and clubs
 
 Use Leagues and Clubs in the main navigation, or open a competition from a score group and a club from a match header, table, player leaderboard or knockout tie.
