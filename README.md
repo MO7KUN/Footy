@@ -20,8 +20,6 @@ Calendar dates use UTC and kickoff text follows profile preferences. Monthly cal
 
 Historical title counts have dated primary-source links in `competition-data.js`; their scope is shown explicitly (for example, Premier League era versus all English top-flight championships). Previous champions are loaded from the prior completed season's final table or knockout final, not inferred from a current table. Records do not auto-update.
 
-Run model checks with `node --test tests/football-model.test.mjs`.
-
 A responsive football match centre with real scores and fixtures from ESPN's public football feed. No fabricated or simulated fixtures are used.
 
 ## Features
